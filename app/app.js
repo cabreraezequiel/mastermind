@@ -14,8 +14,31 @@ gameBoard.height = gameHeight;
 app.stage.addChild(gameBoard);
 ballSlots = [];
 balls = [];
+correctCode = [];
+answerCode = ["","","",""];
+ballTextures = ['red.png', 'green.png', 'blue.png', 'brown.png']
 
-function createBallContainer(x, y) {
+const checkSprite = PIXI.Sprite.from('assets/play.png');
+checkSprite.scale.set(0.16);
+checkSprite.x = 358;
+checkSprite.y = 600;
+checkSprite.on('pointerdown', onCkickity);
+app.stage.addChild(checkSprite);
+checkSprite.interactive = true;
+function onCkickity(){
+  arraysEqual([...answerCode], [...correctCode]);
+}
+
+
+function assignCode() {
+  for (let i = 0; i < 4; i++) {
+    correctCode.push(ballTextures[Math.floor(Math.random() * ballTextures.length)])
+  }
+}
+assignCode();
+console.log("Code: " + correctCode);
+
+function createBallContainer(x, y, idx) {
   ballContainer = new PIXI.Graphics();
   ballContainer.lineStyle(2, 0xFEEB77, 1);
   ballContainer.beginFill(0x650A5A, 1);
@@ -24,6 +47,7 @@ function createBallContainer(x, y) {
   ballContainer.endFill();
   ballContainer.x = x;
   ballContainer.y = y;
+  ballContainer.idx = idx;
   app.stage.addChild(ballContainer);
   ballSlots.push(ballContainer);
 }
@@ -40,10 +64,10 @@ function testForAABB(object1, object2) {
 }
 
 
-createBallContainer((gameBoard.width * + 305), (gameBoard.height * 0.907));
-createBallContainer((gameBoard.width * + 256), (gameBoard.height * 0.907));
-createBallContainer((gameBoard.width * + 208), (gameBoard.height * 0.907));
-createBallContainer((gameBoard.width * + 160), (gameBoard.height * 0.907));
+createBallContainer((gameBoard.width * + 305), (gameBoard.height * 0.907), 0);
+createBallContainer((gameBoard.width * + 256), (gameBoard.height * 0.907), 1);
+createBallContainer((gameBoard.width * + 208), (gameBoard.height * 0.907), 2);
+createBallContainer((gameBoard.width * + 160), (gameBoard.height * 0.907), 3);
 
 
 let sprite = PIXI.Sprite.from('red.png');
@@ -105,6 +129,7 @@ function onDragEnd() {
         this.x = obj.x;
         this.y = obj.y;
         ballCheck = true;
+        answerCode[obj.idx] = this.ballTexture;
     }}
     if (ballCheck) {
       for (obj2 of balls) {
@@ -121,7 +146,19 @@ function onDragEnd() {
       balls.splice(idx, 1);
     }
     }
+    chechAnswer();
     console.log(balls);
+    console.log("Answer: " + answerCode);
+}
+
+function chechAnswer() {
+  answerCode = ["","","",""];
+  for (slot of ballSlots) {
+    for (ball of balls) {
+      if (ball.x === slot.x && ball.y === slot.y) {
+        answerCode[slot.idx] = ball.ballTexture;
+  }}
+}
 }
 
 function onDragMove() {
@@ -132,7 +169,50 @@ function onDragMove() {
     }
 }
 
-ballTextures = ['red.png', 'green.png', 'blue.png', 'brown.png']
+function arraysEqual(answer, code) {
+  let correct = 0;
+  let wrong = 0;
+  let semi = 0;
+  let semiIdx = [];
+  let correctIdx = [];
+  const count = {};
+  let j = 0;
+  answer.forEach(element => {
+    count[element] = (count[element] || 0) + 1;
+  });
+  for (let i = 0; i < answer.length; i++) {
+    console.log("count[" + answer[i] + "]: " + count[answer[i]])
+    if (answer[i] === code[i]) {
+      count[answer[i]] = count[answer[i]] - 1;
+      correct += 1;
+      correctIdx.push(i);
+    }
+/*  for (i of Object.values(count)) {
+    semi += i;
+  }
+    if (i < answer.length){
+      j = i + 1;
+    }
+    else {
+      j = i;
+    }
+*/
+    for (j = 0; j < answer.length; j++) {
+      if ((answer[i] === code[j]) && (count[answer[i]] > 0) && !(correctIdx.includes(j))) {
+        semi += 1;
+        console.log("(count[answer[i]] > 0): " + (count[answer[i]] > 0))
+        console.log(count)
+        count[answer[i]] = count[answer[i]] - 1;
+        console.log("count[" + answer[i] + "]: " + count[answer[i]])
+      }
+    }
+  }
+  wrong = 4 - (correct + semi);
+  console.log("Code: " + correctCode);
+  console.log([correct, semi, wrong]);
+  printResult([correct, semi, wrong]);
+}
+
 
 let ballPositionY = 0;
 for (ball of ballTextures) {
@@ -142,3 +222,55 @@ createBunny(
   Math.floor(ballPositionY),
   ball,
 )};
+
+
+function createBallContainer(x, y, idx) {
+  ballContainer = new PIXI.Graphics();
+  ballContainer.lineStyle(2, 0xFEEB77, 1);
+  ballContainer.beginFill(0x650A5A, 1);
+  ballContainer.interactive = true;
+  ballContainer.drawCircle(0, 0, (gameBoard.height * 0.029));
+  ballContainer.endFill();
+  ballContainer.x = x;
+  ballContainer.y = y;
+  ballContainer.idx = idx;
+  app.stage.addChild(ballContainer);
+  ballSlots.push(ballContainer);
+}
+
+
+const style = new PIXI.TextStyle({
+  fontFamily: 'Arial',
+  fontSize: 30,
+  fontStyle: 'italic',
+  fontWeight: 'bold',
+  fill: ['#ffffff', '#00ff99'], // gradient
+  stroke: '#4a1850',
+  strokeThickness: 5,
+  dropShadow: true,
+  dropShadowColor: '#000000',
+  dropShadowBlur: 4,
+  dropShadowAngle: Math.PI / 6,
+  dropShadowDistance: 6,
+  wordWrap: true,
+  wordWrapWidth: 440,
+  lineJoin: 'round',
+});
+
+
+function printResult(res) {
+var infoText = new PIXI.Text(res[0] + ' correct, ' + res[1] + ' semi, ' + res[2] + ' wrong!', style);
+infoText.x = 10;
+infoText.y = 40;
+const richText = new PIXI.Text('Congrats!', style);
+richText.x = 60;
+richText.y = 100;
+
+app.stage.addChild(infoText);
+if (res[0] === 4) {
+app.stage.addChild(richText);
+}
+setTimeout(function(){
+  app.stage.removeChild(infoText);
+}, 2000);
+}
