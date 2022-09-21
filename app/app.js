@@ -7,16 +7,19 @@ if (gameHeight / gameWidth < ratio) {
 let app = new PIXI.Application({ width: gameWidth, height: gameHeight });
 document.body.appendChild(app.view);
 
-let gameBoard = PIXI.Sprite.from('../assets/board.png');
+let gameBoard = PIXI.Sprite.from('../assets/board_1.png');
 gameBoard.x = 0;
 gameBoard.y = 0;
+//gameBoard.width = gameWidth * 0.7;
 gameBoard.height = gameHeight;
+//gameBoard.height = gameHeight;
 app.stage.addChild(gameBoard);
 ballSlots = [];
 balls = [];
 correctCode = [];
 answerCode = ["","","",""];
-ballTextures = ['red.png', 'green.png', 'blue.png', 'brown.png']
+ballTextures = ['red.png', 'green.png', 'blue.png', 'brown.png'];
+answerBalls = ["", "", "", ""];
 
 const checkSprite = PIXI.Sprite.from('assets/play.png');
 checkSprite.scale.set(0.16);
@@ -27,6 +30,9 @@ app.stage.addChild(checkSprite);
 checkSprite.interactive = true;
 function onCkickity(){
   arraysEqual([...answerCode], [...correctCode]);
+  newBallRow();
+  answerBalls = ["","","",""];
+  answerCode = ["","","",""];
 }
 
 
@@ -43,7 +49,7 @@ function createBallContainer(x, y, idx) {
   ballContainer.lineStyle(2, 0xFEEB77, 1);
   ballContainer.beginFill(0x650A5A, 1);
   ballContainer.interactive = true;
-  ballContainer.drawCircle(0, 0, (gameBoard.height * 0.029));
+  ballContainer.drawCircle(0, 0, (gameBoard.height * 0.02));
   ballContainer.endFill();
   ballContainer.x = x;
   ballContainer.y = y;
@@ -130,6 +136,7 @@ function onDragEnd() {
         this.y = obj.y;
         ballCheck = true;
         answerCode[obj.idx] = this.ballTexture;
+        answerBalls[obj.idx] = this;
     }}
     if (ballCheck) {
       for (obj2 of balls) {
@@ -157,6 +164,7 @@ function chechAnswer() {
     for (ball of balls) {
       if (ball.x === slot.x && ball.y === slot.y) {
         answerCode[slot.idx] = ball.ballTexture;
+        answerBalls[slot.idx] = ball; 
   }}
 }
 }
@@ -173,40 +181,27 @@ function arraysEqual(answer, code) {
   let correct = 0;
   let wrong = 0;
   let semi = 0;
-  let semiIdx = [];
   let correctIdx = [];
-  const count = {};
-  let j = 0;
-  answer.forEach(element => {
-    count[element] = (count[element] || 0) + 1;
-  });
+
   for (let i = 0; i < answer.length; i++) {
-    console.log("count[" + answer[i] + "]: " + count[answer[i]])
     if (answer[i] === code[i]) {
-      count[answer[i]] = count[answer[i]] - 1;
       correct += 1;
-      correctIdx.push(i);
-    }
-/*  for (i of Object.values(count)) {
-    semi += i;
-  }
-    if (i < answer.length){
-      j = i + 1;
-    }
-    else {
-      j = i;
-    }
-*/
-    for (j = 0; j < answer.length; j++) {
-      if ((answer[i] === code[j]) && (count[answer[i]] > 0) && !(correctIdx.includes(j))) {
-        semi += 1;
-        console.log("(count[answer[i]] > 0): " + (count[answer[i]] > 0))
-        console.log(count)
-        count[answer[i]] = count[answer[i]] - 1;
-        console.log("count[" + answer[i] + "]: " + count[answer[i]])
-      }
+      correctIdx.push(answer[i]);
     }
   }
+
+  for (i of correctIdx) {
+    answer.splice(answer.indexOf(i), 1);
+    code.splice(code.indexOf(i), 1);
+  }
+
+  for (i of answer) {
+    if (code.includes(i)) {
+      semi += 1;
+      code.splice(code.indexOf(i), 1);
+    }
+  }
+
   wrong = 4 - (correct + semi);
   console.log("Code: " + correctCode);
   console.log([correct, semi, wrong]);
@@ -222,21 +217,6 @@ createBunny(
   Math.floor(ballPositionY),
   ball,
 )};
-
-
-function createBallContainer(x, y, idx) {
-  ballContainer = new PIXI.Graphics();
-  ballContainer.lineStyle(2, 0xFEEB77, 1);
-  ballContainer.beginFill(0x650A5A, 1);
-  ballContainer.interactive = true;
-  ballContainer.drawCircle(0, 0, (gameBoard.height * 0.029));
-  ballContainer.endFill();
-  ballContainer.x = x;
-  ballContainer.y = y;
-  ballContainer.idx = idx;
-  app.stage.addChild(ballContainer);
-  ballSlots.push(ballContainer);
-}
 
 
 const style = new PIXI.TextStyle({
@@ -259,12 +239,12 @@ const style = new PIXI.TextStyle({
 
 
 function printResult(res) {
-var infoText = new PIXI.Text(res[0] + ' correct, ' + res[1] + ' semi, ' + res[2] + ' wrong!', style);
-infoText.x = 10;
-infoText.y = 40;
-const richText = new PIXI.Text('Congrats!', style);
-richText.x = 60;
-richText.y = 100;
+  var infoText = new PIXI.Text(res[0] + ' correct, ' + res[1] + ' semi, ' + res[2] + ' wrong!', style);
+  infoText.x = 10;
+  infoText.y = 40;
+  const richText = new PIXI.Text('Congrats!', style);
+  richText.x = 60;
+  richText.y = 100;
 
 app.stage.addChild(infoText);
 if (res[0] === 4) {
@@ -273,4 +253,14 @@ app.stage.addChild(richText);
 setTimeout(function(){
   app.stage.removeChild(infoText);
 }, 2000);
+}
+
+function newBallRow() {
+  for (elem of ballSlots) {
+    elem.y -= (gameHeight * 0.112);
+    console.log("this: " + elem);
+  }
+  for (elem of answerBalls) {
+    elem.interactive = false;
+  }
 }
