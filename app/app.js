@@ -21,7 +21,7 @@ answerCode = ["","","",""];
 ballTextures = ['red.png', 'green.png', 'blue.png', 'brown.png'];
 answerBalls = ["", "", "", ""];
 
-const checkSprite = PIXI.Sprite.from('assets/play.png');
+const checkSprite = PIXI.Sprite.from('../assets/play.png');
 checkSprite.scale.set(0.16);
 checkSprite.x = 358;
 checkSprite.y = 600;
