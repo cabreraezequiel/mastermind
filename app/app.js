@@ -7,19 +7,14 @@ if (gameHeight / gameWidth < ratio) {
 let app = new PIXI.Application({ width: gameWidth, height: gameHeight });
 document.body.appendChild(app.view);
 
-<<<<<<< HEAD
-function setBoard() {
-=======
->>>>>>> fdca32ca923c26d7ce29c4eea4a53a6befd02112
-let gameBoard = PIXI.Sprite.from('board.png');
+const boardTexture = PIXI.Texture.from('../assets/board_1.png');
+const gameBoard = new PIXI.Sprite(boardTexture);
 gameBoard.x = 0;
 gameBoard.y = 0;
 //gameBoard.width = gameWidth * 0.7;
 gameBoard.height = gameHeight;
 //gameBoard.height = gameHeight;
 app.stage.addChild(gameBoard);
-}
-setBoard();
 ballSlots = [];
 balls = [];
 correctCode = [];
@@ -27,7 +22,7 @@ answerCode = ["","","",""];
 ballTextures = ['red.png', 'green.png', 'blue.png', 'brown.png'];
 answerBalls = ["", "", "", ""];
 
-const checkSprite = PIXI.Sprite.from('play.png');
+const checkSprite = new PIXI.Sprite.from('../assets/play.png');
 checkSprite.scale.set(0.16);
 checkSprite.x = 358;
 checkSprite.y = 600;
