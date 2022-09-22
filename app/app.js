@@ -7,7 +7,10 @@ if (gameHeight / gameWidth < ratio) {
 let app = new PIXI.Application({ width: gameWidth, height: gameHeight });
 document.body.appendChild(app.view);
 
+<<<<<<< HEAD
 function setBoard() {
+=======
+>>>>>>> fdca32ca923c26d7ce29c4eea4a53a6befd02112
 let gameBoard = PIXI.Sprite.from('board.png');
 gameBoard.x = 0;
 gameBoard.y = 0;
